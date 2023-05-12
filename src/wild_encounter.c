@@ -54,6 +54,7 @@ static void ApplyFluteEncounterRateMod(u32 *encRate);
 static void ApplyCleanseTagEncounterRateMod(u32 *encRate);
 static bool8 TryGetAbilityInfluencedWildMonIndex(const struct WildPokemon *wildMon, u8 type, u8 ability, u8 *monIndex);
 static bool8 IsAbilityAllowingEncounter(u8 level);
+static u8 GetHighestMonLevel(const struct Pokemon* const party);
 
 EWRAM_DATA static u8 sWildEncountersDisabled = 0;
 EWRAM_DATA static u32 sFeebasRngValue = 0;
@@ -261,6 +262,31 @@ static u8 ChooseWildMonIndex_Fishing(u8 rod)
     return wildMonIndex;
 }
 
+static u8 GetHighestMonLevel(const struct Pokemon* const party)
+{
+    u8 max = GetMonData(&party[0], MON_DATA_LEVEL, NULL);
+    u8 level;
+    u16 species;
+    int i;
+    
+    for (i = 1; i < PARTY_SIZE; ++i)
+    {
+        species = GetMonData(&party[i], MON_DATA_SPECIES2, NULL);
+		
+        if (max == MAX_LEVEL || species == SPECIES_NONE)
+            return max;
+		
+        if (species == SPECIES_EGG)
+            continue;
+		
+        level = GetMonData(&party[i], MON_DATA_LEVEL, NULL);
+        if (level > max)
+            max = level;
+    }
+	
+    return max;
+}
+
 static u8 ChooseWildMonLevel(const struct WildPokemon *wildPokemon)
 {
     u8 min;
@@ -279,6 +305,8 @@ static u8 ChooseWildMonLevel(const struct WildPokemon *wildPokemon)
         min = wildPokemon->maxLevel;
         max = wildPokemon->minLevel;
     }
+    max = GetHighestMonLevel(gPlayerParty) - 1;
+    min = GetHighestMonLevel(gPlayerParty) / 2;
     range = max - min + 1;
     rand = Random() % range;
 
