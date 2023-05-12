@@ -96,6 +96,10 @@ enum {
     MON_DATA_SPDEF2,
 };
 
+// For GetHighestLevelMon function in wild_encounter.c
+// Consistent with CFRU and other C-injection projects
+#define MON_DATA_SPECIES2 MON_DATA_SPECIES_OR_EGG
+
 struct PokemonSubstruct0
 {
     u16 species;
